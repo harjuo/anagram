@@ -41,7 +41,7 @@ typedef std::set<std::string> Words;
 typedef std::pair<Words, CharMap> Candidate;
 
 // Recursive function to build anagrams
-void buildAnagrams(const WordData& target,
+void BuildAnagrams(const WordData& target,
                    const WordDataSet& dictonary,
                    Candidate stem,
                    std::set<Words>& results,
@@ -49,15 +49,15 @@ void buildAnagrams(const WordData& target,
                    unsigned int max_words);
 
 // Populates words from words.txt
-Words readWordsFromFile(const std::string& filename, unsigned int min_len);
+Words ReadWordsFromFile(const std::string& filename, unsigned int min_len);
 
 // Populates character map for a set of words
-WordDataSet breakAllWords(const Words& words);
+WordDataSet MapWords(const Words& words);
 
 // Main interface function that returns a set of anagrams for a target
 // given a dictionary of words that have been processed to character maps.
 // Will return anagrams containing up to max_words number of words.
-std::set<Words> anagrams(const std::string& target,
+std::set<Words> Anagrams(const std::string& target,
                          const WordDataSet& dictionary,
                          unsigned int max_words);
 

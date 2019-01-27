@@ -6,6 +6,7 @@ CMakeFiles
 Makefile
 *.swp
 anagram
+anagramtest
 callgrind*
 cmake_install.cmake
 *.json

@@ -2,6 +2,9 @@
 #include <iostream>
 #include "anagram.h"
 
+const auto MIN_WORD_LEN_LIMITER = 4;
+const auto MAX_WORD_COUNT_LIMITER = 3;
+
 int main(int argc, char** argv)
 {
     if (argc < 2)
@@ -9,9 +12,13 @@ int main(int argc, char** argv)
         return 1;
     }
     std::string target = argv[1];
-    Words words = readWordsFromFile("words.txt", target.length()/4);
-    WordDataSet all_words_data = breakAllWords(words);
-    std::set<Words> results = anagrams(argv[1], all_words_data, target.length()/3);
+    // The minimum word length depends on the target word
+    auto min_word_len = target.length()/MIN_WORD_LEN_LIMITER;
+    auto words = ReadWordsFromFile("words.txt", min_word_len);
+    auto all_words_data = MapWords(words);
+    // The maximum number of words also depends on the target word
+    auto max_word_count = target.length()/MAX_WORD_COUNT_LIMITER;
+    auto results = Anagrams(argv[1], all_words_data, max_word_count);
     for (const auto& words: results)
     {
         for (const auto& word: words)
