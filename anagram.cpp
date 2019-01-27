@@ -88,6 +88,7 @@ WordDataSet MapWords(const Words& words)
     return word_data_set;
 }
 
+// Main interface function
 std::set<Words> Anagrams(const std::string& target,
                          const WordDataSet& dictionary,
                          unsigned int max_words)
@@ -104,6 +105,12 @@ std::set<Words> Anagrams(const std::string& target,
     return results;
 }
 
+// Recursive worker function that works by building a stem which is a
+// set of words that fit to the target string. As long as the constraints
+// are satisfied it goes through the dictionary and calls itself recursively
+// for each word that would still fit in the stem to match the target word.
+// Recursion terminates if stem matches the target exactly or there are
+// too many words in the stem.
 void BuildAnagrams(const WordData& target,
                    const WordDataSet& dictionary,
                    Candidate stem,

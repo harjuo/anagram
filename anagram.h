@@ -40,7 +40,7 @@ typedef std::set<std::string> Words;
 // Map of several words and their string representation
 typedef std::pair<Words, CharMap> Candidate;
 
-// Recursive function to build anagrams
+// Recursive function to build anagrams.
 void BuildAnagrams(const WordData& target,
                    const WordDataSet& dictonary,
                    Candidate stem,
