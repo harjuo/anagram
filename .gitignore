@@ -1,0 +1,11 @@
+*.txt
+!CMakeLists.txt
+*.o
+CMakeCache.txt
+CMakeFiles
+Makefile
+*.swp
+anagram
+callgrind*
+cmake_install.cmake
+
