@@ -7,11 +7,11 @@ typedef std::set<std::string> Words;
 typedef std::pair<Words, CharMap> Candidate;
 
 void buildAnagrams(const WordData& target,
-                              const WordDataSet& dictonary,
-                              Candidate stem,
-                              std::set<Words>& results,
-                              unsigned int length,
-                              unsigned int max_words);
+                   const WordDataSet& dictonary,
+                   Candidate stem,
+                   std::set<Words>& results,
+                   unsigned int length,
+                   unsigned int max_words);
 
 Words readWordsFromFile(const std::string& filename, unsigned int min_len)
 {
