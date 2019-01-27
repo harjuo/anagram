@@ -1,10 +1,5 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <map>
-#include <set>
+#include "anagram.h"
 #include <fstream>
-#include <utility>
 
 typedef std::map<char, unsigned int> Breakdown;
 typedef std::pair<std::string, Breakdown> WordData;
@@ -136,24 +131,3 @@ void buildAnagrams(const WordData& target,
 		}
 	}
 }
-
-int main(int argc, char** argv)
-{
-	if (argc < 4)
-	{
-		return 1;
-	}
-	Words words = readWordsFromFile("words.txt", std::stoi(argv[2]));
-    WordDataSet all_words_data = breakAllWords(words);
-	std::set<Words> results = anagrams(argv[1], all_words_data, std::stoi(argv[3]));
-	for (const auto& words: results)
-	{
-		for (const auto& word: words)
-		{
-			std::cout << word << " ";
-		}
-		std::cout << std::endl;
-	}
-	return 0;
-}
-

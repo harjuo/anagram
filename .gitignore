@@ -8,4 +8,5 @@ Makefile
 anagram
 callgrind*
 cmake_install.cmake
-
+*.json
+.vscode
