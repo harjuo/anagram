@@ -29,10 +29,10 @@ private:
 // Pairs a word's string representation and character map
 typedef std::pair<std::string, CharMap> WordData;
 
-// Set of multiple word data
+// Collection of multiple word data
 typedef std::vector<WordData> WordDataSet;
 
-// Set of words
+// Collection of words
 typedef std::vector<std::string> Words;
 
 // Map of several words and their string representation
