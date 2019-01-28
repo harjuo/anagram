@@ -22,11 +22,8 @@ public:
 
     bool operator==(const CharMap& other) const;
 
-    // Used by standard containers, returns std::map<T>::operator<
-    bool operator<(const CharMap& other) const;
-
 private:
-    std::map<char, unsigned int> container;
+    std::vector<unsigned int> container;
 };
 
 // Pairs a word's string representation and character map

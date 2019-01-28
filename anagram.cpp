@@ -1,12 +1,15 @@
 #include "anagram.h"
 #include <fstream>
+#include <climits>
+#include <algorithm>
 
-CharMap::CharMap() : container()
+CharMap::CharMap() : container(UCHAR_MAX + 1)
 {
 }
 
-CharMap::CharMap(const std::string& word)
+CharMap::CharMap(const std::string& word) : container(UCHAR_MAX + 1)
 {
+    // Add data from word
     for (auto c: word)
     {
         this->container[c]++;
@@ -15,28 +18,20 @@ CharMap::CharMap(const std::string& word)
 
 void CharMap::Append(const CharMap& other)
 {
-    for(const auto& other_unit: other.container)
+    // Add values from other
+    for (unsigned int i = 0; i <= UCHAR_MAX; i++)
     {
-        this->container[other_unit.first] += other_unit.second;
+        this->container[i] += other.container[i];
     }
 }
 
 bool CharMap::Contains(const CharMap& other) const
 {
-    for (const auto& other_char: other.container)
+    for (unsigned int i = 0; i <= UCHAR_MAX; i++)
     {
-        const auto& this_char = this->container.find(other_char.first);
-        if (this_char != this->container.end())
+        if (this->container[i] < other.container[i])
         {
-            if (this_char->second < other_char.second)
-            {
-                // Too many characters in other
-                return false;
-            }
-        }
-        else
-        {
-            // Character not found in this container
+            // Too many instances of this character in other
             return false;
         }
     }
@@ -46,12 +41,14 @@ bool CharMap::Contains(const CharMap& other) const
 
 bool CharMap::operator==(const CharMap& other) const
 {
-    return this->container == other.container;
-}
-
-bool CharMap::operator<(const CharMap& other) const
-{
-    return this->container < other.container;
+    for (unsigned int i = 0; i <= UCHAR_MAX; i++)
+    {
+        if (this->container[i] != other.container[i])
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 Words ReadWordsFromFile(const std::string& filename, unsigned int min_len)
@@ -115,7 +112,8 @@ void BuildAnagrams(const WordData& target,
 {
     if (stem.second == target.second)
     {
-        // Anagram found
+        // Anagram found. Sort words to prevent duplicates.
+        std::sort(stem.first.begin(), stem.first.end());
         results.insert(stem.first);
     }
     if (stem.first.size() > max_words - 1)

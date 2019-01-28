@@ -4,11 +4,11 @@
 
 void populate_dictionary(Words& dictionary)
 {
-    dictionary.insert("foo");
-    dictionary.insert("bar");
-    dictionary.insert("baz");
-    dictionary.insert("barbaz");
-    dictionary.insert("foobar");
+    dictionary.push_back("foo");
+    dictionary.push_back("bar");
+    dictionary.push_back("baz");
+    dictionary.push_back("barbaz");
+    dictionary.push_back("foobar");
 }
 
 void test_three_anagrams()
