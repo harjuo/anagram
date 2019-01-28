@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <utility>
+#include <vector>
 
 // Maps strings into character counts.
 class CharMap
@@ -32,10 +33,10 @@ private:
 typedef std::pair<std::string, CharMap> WordData;
 
 // Set of multiple word data
-typedef std::set<WordData> WordDataSet;
+typedef std::vector<WordData> WordDataSet;
 
 // Set of words
-typedef std::set<std::string> Words;
+typedef std::vector<std::string> Words;
 
 // Map of several words and their string representation
 typedef std::pair<Words, CharMap> Candidate;

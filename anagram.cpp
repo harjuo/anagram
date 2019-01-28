@@ -1,11 +1,6 @@
 #include "anagram.h"
 #include <fstream>
 
-typedef std::pair<std::string, CharMap> WordData;
-typedef std::set<WordData> WordDataSet;
-typedef std::set<std::string> Words;
-typedef std::pair<Words, CharMap> Candidate;
-
 CharMap::CharMap() : container()
 {
 }
@@ -69,7 +64,7 @@ Words ReadWordsFromFile(const std::string& filename, unsigned int min_len)
     {
         if (word.length() >= min_len)
         {
-            words.insert(word);
+            words.push_back(word);
         }
     }
     return words;
@@ -83,7 +78,7 @@ WordDataSet MapWords(const Words& words)
         WordData word_data;
         word_data.first = word;
         word_data.second = CharMap(word);
-        word_data_set.insert(word_data);
+        word_data_set.push_back(word_data);
     }
     return word_data_set;
 }
@@ -128,14 +123,15 @@ void BuildAnagrams(const WordData& target,
         // Too many words in anagram
         return;
     }
+    const auto target_length = target.first.length();
     for (const auto& new_word: dictionary)
     {
         // Add new words recursively
-        if (new_word.first.length() + length <= target.first.length())
+        if (new_word.first.length() + length <= target_length)
         {
             // This word is short enough
             auto new_stem = stem;
-            new_stem.first.insert(new_word.first);
+            new_stem.first.push_back(new_word.first);
             new_stem.second.Append(new_word.second);
             if (target.second.Contains(new_stem.second))
             {
