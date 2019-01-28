@@ -1,5 +1,6 @@
 #include "anagram.h"
 #include <fstream>
+#include <algorithm>
 
 CharMap::CharMap() : container()
 {
@@ -115,7 +116,8 @@ void BuildAnagrams(const WordData& target,
 {
     if (stem.second == target.second)
     {
-        // Anagram found
+        // Anagram found. Avoid duplicates by sorting.
+        sort(stem.first.begin(), stem.first.end());
         results.insert(stem.first);
     }
     if (stem.first.size() > max_words - 1)
