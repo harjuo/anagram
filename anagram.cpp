@@ -1,6 +1,7 @@
 #include "anagram.h"
 #include <fstream>
 #include <algorithm>
+#include <thread>
 
 CharMap::CharMap() : container()
 {
@@ -84,40 +85,181 @@ WordDataSet MapWords(const Words& words)
     return word_data_set;
 }
 
-// Main interface function
+struct ThreadContext
+{
+    const WordDataSet& dict_split;
+    const WordDataSet& dictionary;
+    const std::string& target;
+    std::set<Words>& results;
+    unsigned int max_words;
+    std::mutex& results_guard;
+};
+
+// Encapsulates a thread and results of its computation
+struct ThreadContainer
+{
+    std::thread* thread;
+    std::set<Words>* results;
+};
+
+// Splits dictionary to smaller parts that can be assigned to separate threads
+void SplitWork(std::vector<WordDataSet>& dict_splits,
+               const WordDataSet& dictionary)
+{
+    int i = 0;
+    for (; i < MAX_NUM_THREADS; i++)
+    {
+        dict_splits.push_back(WordDataSet());
+    }
+    i = 0;
+    for (const auto& word: dictionary)
+    {
+        dict_splits.at(i % MAX_NUM_THREADS).push_back(word);
+        i++;
+    }
+}
+
+void TryAddNewWord(const WordData& new_word,
+                   const WordData& target_data,
+                   const WordDataSet& dictionary,
+                   Candidate& stem,
+                   std::set<Words>& results,
+                   unsigned int cur_len,
+                   unsigned int max_words,
+                   std::mutex& results_guard)
+{
+    // Add new words recursively
+    if (new_word.first.length() + cur_len <= target_data.first.length())
+    {
+        // This word is short enough
+        auto new_stem = stem;
+        new_stem.first.push_back(new_word.first);
+        new_stem.second.Append(new_word.second);
+        if (target_data.second.Contains(new_stem.second))
+        {
+            // This word fits into anagram. Try new words recursively.
+            cur_len += new_word.first.length();
+            BuildAnagrams(
+                target_data,
+                dictionary,
+                new_stem,
+                results,
+                cur_len,
+                max_words,
+                results_guard);
+        }
+    }
+}
+
+void ThreadWorker(ThreadContext& ctx)
+{
+    Candidate stem;
+    WordData target_data;
+    target_data.first = ctx.target;
+    target_data.second = CharMap(ctx.target);
+    // This logic is almost identical to BuildAnagrams but on the
+    // outermost loop only a split of the dictionary is iterated through.
+    for (const auto& new_word: ctx.dict_split)
+    {
+        TryAddNewWord(
+            new_word,
+            target_data,
+            ctx.dictionary,
+            stem,
+            ctx.results,
+            0,
+            ctx.max_words,
+            ctx.results_guard);
+    }
+}
+
+
+// Main interface function. Divides the computation to several threads
+// and collects results from them.
 std::set<Words> Anagrams(const std::string& target,
-                         const WordDataSet& dictionary,
+                         WordDataSet& dictionary,
                          unsigned int max_words)
 {
     std::set<Words> results;
-    if (max_words > 0)
+    if (max_words < 1)
     {
-        Candidate stem;
-        WordData target_data;
-        target_data.first = target;
-        target_data.second = CharMap(target);
-        BuildAnagrams(target_data, dictionary, stem, results, 0, max_words);
+        // Return empty results
+        return results;
     }
+
+    // Split the work to MAX_NUM_THREADS
+    std::vector<std::thread*> worker_threads(MAX_NUM_THREADS);
+    // Each thread has its own context
+    std::vector<ThreadContext> thread_contexes;
+    // Each thread has a split of dictionary to go through
+    std::vector<WordDataSet> dict_splits;
+    // Each thread has its own set of results
+    std::vector<std::set<Words>> thread_results(MAX_NUM_THREADS);
+    SplitWork(dict_splits, dictionary);
+
+    std::mutex results_guard;
+
+    // Create contexes for threads
+    for (int thread_num = 0; thread_num < MAX_NUM_THREADS; thread_num++)
+    {
+        ThreadContainer thread_cont;
+        thread_cont.results = &thread_results.at(thread_num);
+        ThreadContext ctx = {
+            .dict_split = dict_splits.at(thread_num),
+            .dictionary = dictionary,
+            .target = target,
+            .results = thread_results.at(thread_num),
+            .max_words = max_words,
+            .results_guard = results_guard
+        };
+        thread_contexes.push_back(ctx);
+    }
+
+    // Start all the threads
+    for (int thread_num = 0; thread_num < MAX_NUM_THREADS; thread_num++)
+    {
+        worker_threads.at(thread_num) = new std::thread(
+            ThreadWorker,
+            std::ref(thread_contexes.at(thread_num)));
+    }
+
+    // Join the threads
+    for(int i = 0; i < MAX_NUM_THREADS; i++)
+    {
+        worker_threads.at(i)->join();
+    }
+
+    // Collect results from threads
+    for(int i = 0; i < MAX_NUM_THREADS; i++)
+    {
+        results.insert(thread_results.at(i).begin(),
+                       thread_results.at(i).end());
+        delete worker_threads.at(i);
+    }
+
     return results;
 }
 
 // Recursive worker function that works by building a stem which is a
 // set of words that fit to the target string. As long as the constraints
-// are satisfied it goes through the dictionary and calls itself recursively
-// for each word that would still fit in the stem to match the target word.
-// Recursion terminates if stem matches the target exactly or there are
+// are satisfied it goes through the dictionary and calls TryAddNewWord.
+// That function checks if the word fits in the anagram and then calls
+// BuildAnagram. These function call each other recursively until the
+// recursion terminates if stem matches the target exactly or there are
 // too many words in the stem.
 void BuildAnagrams(const WordData& target,
                    const WordDataSet& dictionary,
                    Candidate stem,
                    std::set<Words>& results,
                    unsigned int length,
-                   unsigned int max_words)
+                   unsigned int max_words,
+                   std::mutex& results_guard)
 {
     if (stem.second == target.second)
     {
         // Anagram found. Avoid duplicates by sorting.
         sort(stem.first.begin(), stem.first.end());
+        std::lock_guard<std::mutex> guard(results_guard);
         results.insert(stem.first);
     }
     if (stem.first.size() > max_words - 1)
@@ -125,24 +267,9 @@ void BuildAnagrams(const WordData& target,
         // Too many words in anagram
         return;
     }
-    const auto target_length = target.first.length();
     for (const auto& new_word: dictionary)
     {
-        // Add new words recursively
-        if (new_word.first.length() + length <= target_length)
-        {
-            // This word is short enough
-            auto new_stem = stem;
-            new_stem.first.push_back(new_word.first);
-            new_stem.second.Append(new_word.second);
-            if (target.second.Contains(new_stem.second))
-            {
-                // This word fits into anagram. Try new words
-                // recursively.
-                BuildAnagrams(target, dictionary, new_stem, results,
-                              new_word.first.length() + length,
-                              max_words);
-            }
-        }
+        TryAddNewWord(new_word, target, dictionary, stem, results,
+                      length, max_words, results_guard);
     }
 }

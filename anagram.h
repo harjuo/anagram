@@ -5,6 +5,9 @@
 #include <set>
 #include <utility>
 #include <vector>
+#include <mutex>
+
+const auto MAX_NUM_THREADS = 16;
 
 // Maps strings into character counts.
 class CharMap
@@ -47,7 +50,8 @@ void BuildAnagrams(const WordData& target,
                    Candidate stem,
                    std::set<Words>& results,
                    unsigned int length,
-                   unsigned int max_words);
+                   unsigned int max_words,
+                   std::mutex& results_guard);
 
 // Populates words from words.txt
 Words ReadWordsFromFile(const std::string& filename, unsigned int min_len);
@@ -59,7 +63,7 @@ WordDataSet MapWords(const Words& words);
 // given a dictionary of words that have been processed to character maps.
 // Will return anagrams containing up to max_words number of words.
 std::set<Words> Anagrams(const std::string& target,
-                         const WordDataSet& dictionary,
+                         WordDataSet& dictionary,
                          unsigned int max_words);
 
 #endif
