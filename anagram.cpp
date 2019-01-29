@@ -202,8 +202,6 @@ std::set<Words> Anagrams(const std::string& target,
     // Create contexes for threads
     for (int thread_num = 0; thread_num < MAX_NUM_THREADS; thread_num++)
     {
-        ThreadContainer thread_cont;
-        thread_cont.results = &thread_results.at(thread_num);
         ThreadContext ctx = {
             .dict_split = dict_splits.at(thread_num),
             .dictionary = dictionary,

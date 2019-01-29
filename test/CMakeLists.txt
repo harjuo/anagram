@@ -1,4 +1,8 @@
+cmake_minimum_required(VERSION 3.10)
 project(anagramtest)
 add_executable(anagramtest test.cpp ../anagram.cpp)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -g -Wextra -std=c++11")
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -Wextra -std=c++11")
+set(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
+set(GCC_COVERAGE_LINK_FLAGS "-lgcov")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")

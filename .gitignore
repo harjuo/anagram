@@ -11,3 +11,4 @@ callgrind*
 cmake_install.cmake
 *.json
 .vscode
+*.gc*
