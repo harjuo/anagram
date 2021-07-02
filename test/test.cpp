@@ -1,6 +1,7 @@
+#include "anagram.h"
+#include "charmap.h"
 #include <iostream>
 #include <cassert>
-#include "../anagram.h"
 
 void populate_dictionary(Words& dictionary)
 {

@@ -1,63 +1,11 @@
 #include "anagram.h"
+#include "charmap.h"
 #include <fstream>
 #include <algorithm>
 #include <thread>
 #include <memory>
 
 typedef std::vector<std::unique_ptr<std::thread>> thread_vector;
-
-CharMap::CharMap() : container()
-{
-}
-
-CharMap::CharMap(const std::string& word)
-{
-    for (auto c: word)
-    {
-        this->container[c]++;
-    }
-}
-
-void CharMap::Append(const CharMap& other)
-{
-    for(const auto& other_unit: other.container)
-    {
-        this->container[other_unit.first] += other_unit.second;
-    }
-}
-
-bool CharMap::Contains(const CharMap& other) const
-{
-    for (const auto& other_char: other.container)
-    {
-        const auto& this_char = this->container.find(other_char.first);
-        if (this_char != this->container.end())
-        {
-            if (this_char->second < other_char.second)
-            {
-                // Too many characters in other
-                return false;
-            }
-        }
-        else
-        {
-            // Character not found in this container
-            return false;
-        }
-    }
-    // All checks passed, other can fit into this
-    return true;
-}
-
-bool CharMap::operator==(const CharMap& other) const
-{
-    return this->container == other.container;
-}
-
-bool CharMap::operator<(const CharMap& other) const
-{
-    return this->container < other.container;
-}
 
 Words ReadWordsFromFile(const std::string& filename, size_t min_len)
 {
@@ -96,13 +44,6 @@ struct ThreadContext
     std::set<Words>& results;
     std::mutex& results_guard;
     size_t max_words;
-};
-
-// Encapsulates a thread and results of its computation
-struct ThreadContainer
-{
-    std::thread* thread;
-    std::set<Words>* results;
 };
 
 // Splits dictionary to smaller parts that can be assigned to separate threads
@@ -203,7 +144,8 @@ std::set<Words> Anagrams(const std::string& target,
     std::mutex results_guard;
 
     // Create contexes for threads
-    for (size_t thread_num = 0; thread_num < MAX_NUM_THREADS; thread_num++)
+    //for (size_t thread_num = 0; thread_num < MAX_NUM_THREADS; thread_num++)
+    for (const auto &thread_num: thread_ids)
     {
         ThreadContext ctx = {
             .dict_split = dict_splits.at(thread_num),
@@ -217,7 +159,7 @@ std::set<Words> Anagrams(const std::string& target,
     }
 
     // Start all the threads
-    for (size_t thread_num = 0; thread_num < MAX_NUM_THREADS; thread_num++)
+    for (const auto &thread_num: thread_ids)
     {
         worker_threads.at(thread_num) = std::make_unique<std::thread>(
             std::thread(
@@ -226,16 +168,16 @@ std::set<Words> Anagrams(const std::string& target,
     }
 
     // Join the threads
-    for(size_t i = 0; i < MAX_NUM_THREADS; i++)
+    for (const auto &thread_num: thread_ids)
     {
-        worker_threads.at(i)->join();
+        worker_threads.at(thread_num)->join();
     }
 
     // Collect results from threads
-    for(size_t i = 0; i < MAX_NUM_THREADS; i++)
+    for (const auto &thread_num: thread_ids)
     {
-        results.insert(thread_results.at(i).begin(),
-                       thread_results.at(i).end());
+        results.insert(thread_results.at(thread_num).begin(),
+                       thread_results.at(thread_num).end());
     }
 
     return results;

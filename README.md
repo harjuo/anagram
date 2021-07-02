@@ -8,7 +8,7 @@ Command line program written in C++ that prints anagrams of a given words. Uses 
 
 ## Building
 
-Requires a C++11 compliant g++ or clang.
+Requires a C++20 compliant g++ or clang.
 
     cmake .
     make

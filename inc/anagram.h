@@ -1,6 +1,7 @@
 #ifndef ANAGRAM_H
 #define ANAGRAM_H
 
+#include "charmap.h"
 #include <map>
 #include <set>
 #include <utility>
@@ -8,29 +9,8 @@
 #include <mutex>
 
 const auto MAX_NUM_THREADS = 16;
-
-// Maps strings into character counts.
-class CharMap
-{
-public:
-    CharMap();
-    CharMap(const std::string& word);
-
-    // Adds the data from another map to this
-    void Append(const CharMap& other);
-
-    // Returns true if this one has at least one character for
-    // each character in the other map.
-    bool Contains(const CharMap& other) const;
-
-    bool operator==(const CharMap& other) const;
-
-    // Used by standard containers, returns std::map<T>::operator<
-    bool operator<(const CharMap& other) const;
-
-private:
-    std::map<char, unsigned int> container;
-};
+const unsigned int thread_ids[MAX_NUM_THREADS] =
+    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
 // Pairs a word's string representation and character map
 typedef std::pair<std::string, CharMap> WordData;
