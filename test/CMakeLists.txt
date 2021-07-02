@@ -5,6 +5,7 @@ add_executable(
     test.cpp
     ../src/anagram.cpp
     ../src/charmap.cpp
+    ../src/builderinstance.cpp
 )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread -g -Wextra -pedantic -pedantic-errors -std=c++20")
 set(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
