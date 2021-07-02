@@ -8,9 +8,11 @@ Command line program written in C++ that prints anagrams of a given words. Uses 
 
 ## Building
 
-Requires a C++20 compliant g++ or clang.
+Requires a C++20 compliant compiler such as gcc or clang and cmake (3.16).
 
-    cmake .
+    mkdir build
+    cd build
+    cmake ..
     make
 
 ## Testing
@@ -18,6 +20,9 @@ Requires a C++20 compliant g++ or clang.
 Unit tests are a separate CMake project in the `test` subdirectory.
 
     cd test
-    cmake .
+    mkdir build
+    cd build
+    cmake ..
     make
     ./anagramtest
+
