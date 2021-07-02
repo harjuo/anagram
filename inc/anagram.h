@@ -9,8 +9,6 @@
 #include <mutex>
 
 const auto MAX_NUM_THREADS = 16;
-const unsigned int thread_ids[MAX_NUM_THREADS] =
-    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
 class AnagramBuilder {
 public:
@@ -32,6 +30,9 @@ public:
         size_t min_len,
         size_t max_words
     );
+
+    AnagramBuilder(const AnagramBuilder&) = delete;
+    AnagramBuilder& operator=(const AnagramBuilder&) = delete;
 
     std::set<Words> getAnagrams();
 

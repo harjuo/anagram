@@ -12,8 +12,10 @@ int main(int argc, char** argv)
         return 1;
     }
     std::string target = argv[1];
-    auto anagramBuilder = AnagramBuilder(target, "words.txt", MIN_WORD_LEN, MAX_WORD_COUNT);
-    for (const auto& words: anagramBuilder.getAnagrams())
+    for (const auto& words: AnagramBuilder(
+        target, "words.txt", 
+        MIN_WORD_LEN, 
+        MAX_WORD_COUNT).getAnagrams())
     {
         for (const auto& word: words)
         {

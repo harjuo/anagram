@@ -105,7 +105,7 @@ std::set<AnagramBuilder::Words> AnagramBuilder::anagrams(WordDataSet& dictionary
 
     // Create contexes for threads
     //for (size_t thread_num = 0; thread_num < MAX_NUM_THREADS; thread_num++)
-    for (const auto &thread_num: thread_ids)
+    for (size_t thread_num = 0; thread_num < MAX_NUM_THREADS; ++thread_num)
     {
         auto ctx = BuilderInstance(
             dict_splits.at(thread_num),
@@ -120,7 +120,7 @@ std::set<AnagramBuilder::Words> AnagramBuilder::anagrams(WordDataSet& dictionary
     }
 
     // Start all the threads
-    for (const auto &thread_num: thread_ids)
+    for (size_t thread_num = 0; thread_num < MAX_NUM_THREADS; ++thread_num)
     {
         worker_threads.at(thread_num) = std::make_unique<std::thread>(
             std::thread(
@@ -129,13 +129,13 @@ std::set<AnagramBuilder::Words> AnagramBuilder::anagrams(WordDataSet& dictionary
     }
 
     // Join the threads
-    for (const auto &thread_num: thread_ids)
+    for (size_t thread_num = 0; thread_num < MAX_NUM_THREADS; ++thread_num)
     {
         worker_threads.at(thread_num)->join();
     }
 
     // Collect results from threads
-    for (const auto &thread_num: thread_ids)
+    for (size_t thread_num = 0; thread_num < MAX_NUM_THREADS; ++thread_num)
     {
         results.insert(thread_results.at(thread_num).begin(),
                        thread_results.at(thread_num).end());

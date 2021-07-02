@@ -26,7 +26,6 @@ public:
     {
     }
 
-    // TODO can't do this yet BuilderInstance(const BuilderInstance&) = delete;
     BuilderInstance& operator=(const BuilderInstance&) = delete;
 
     void generateAnagrams();
