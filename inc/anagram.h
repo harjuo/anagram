@@ -12,38 +12,45 @@ const auto MAX_NUM_THREADS = 16;
 const unsigned int thread_ids[MAX_NUM_THREADS] =
     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
-// Pairs a word's string representation and character map
-typedef std::pair<std::string, CharMap> WordData;
+class AnagramBuilder {
+public:
+    // Collection of words
+    typedef std::vector<std::string> Words;
 
-// Collection of multiple word data
-typedef std::vector<WordData> WordDataSet;
+    // Pairs a word's string representation and character map
+    typedef std::pair<std::string, CharMap> WordData;
 
-// Collection of words
-typedef std::vector<std::string> Words;
+    // Collection of multiple word data
+    typedef std::vector<WordData> WordDataSet;
 
-// Map of several words and their string representation
-typedef std::pair<Words, CharMap> Candidate;
+    // Map of several words and their string representation
+    typedef std::pair<Words, CharMap> Candidate;
 
-// Recursive function to build anagrams.
-void BuildAnagrams(const WordData& target,
-                   const WordDataSet& dictonary,
-                   Candidate stem,
-                   std::set<Words>& results,
-                   size_t length,
-                   size_t max_words,
-                   std::mutex& results_guard);
+    AnagramBuilder(
+        const std::string& target,
+        const std::string& filename,
+        size_t min_len,
+        size_t max_words
+    );
 
-// Populates words from words.txt
-Words ReadWordsFromFile(const std::string& filename, size_t min_len);
+    std::set<Words> getAnagrams();
 
-// Populates character map for a set of words
-WordDataSet MapWords(const Words& words);
+private:
+    // Populates words from given file
+    Words readWordsFromFile();
 
-// Main interface function that returns a set of anagrams for a target
-// given a dictionary of words that have been processed to character maps.
-// Will return anagrams containing up to max_words number of words.
-std::set<Words> Anagrams(const std::string& target,
-                         WordDataSet& dictionary,
-                         size_t max_words);
+    // Populates character map for a set of words
+    WordDataSet mapWords(const Words& words);
+
+    // Main worker function that returns a set of anagrams for a target
+    // given a dictionary of words that have been processed to character maps.
+    // Will return anagrams containing up to max_words number of words.
+    std::set<Words> anagrams(WordDataSet& dictionary);
+
+    const std::string& target_;
+    const std::string& filename_;
+    size_t min_len_;
+    size_t max_words_;
+};
 
 #endif

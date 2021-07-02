@@ -10,10 +10,10 @@ class BuilderInstance
 {
 public:
     BuilderInstance(
-        const WordDataSet& dict_split,
-        const WordDataSet& dictionary,
+        const AnagramBuilder::WordDataSet& dict_split,
+        const AnagramBuilder::WordDataSet& dictionary,
         const std::string& target,
-        std::set<Words>& results,
+        std::set<AnagramBuilder::Words>& results,
         std::mutex& results_guard,
         size_t max_words
     ) :
@@ -33,20 +33,20 @@ public:
 
 private:
     void tryAddNewWord(
-        const WordData& new_word,
-        const WordData& target_data,
-        Candidate& stem,
+        const AnagramBuilder::WordData& new_word,
+        const AnagramBuilder::WordData& target_data,
+        AnagramBuilder::Candidate& stem,
         size_t cur_len);
 
     void buildMoreAnagramsRecursively(
-        const WordData& target,
-        Candidate stem,
+        const AnagramBuilder::WordData& target,
+        AnagramBuilder::Candidate stem,
         size_t length);
 
-    const WordDataSet& dict_split_;
-    const WordDataSet& dictionary_;
+    const AnagramBuilder::WordDataSet& dict_split_;
+    const AnagramBuilder::WordDataSet& dictionary_;
     const std::string& target_;
-    std::set<Words>& results_;
+    std::set<AnagramBuilder::Words>& results_;
     std::mutex& results_guard_;
     size_t max_words_;
 };

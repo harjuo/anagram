@@ -7,15 +7,36 @@
 
 typedef std::vector<std::unique_ptr<std::thread>> thread_vector;
 
-Words ReadWordsFromFile(const std::string& filename, size_t min_len)
+AnagramBuilder::AnagramBuilder(
+        const std::string& target,
+        const std::string& filename,
+        size_t min_len,
+        size_t max_words
+) : 
+    target_(target),
+    filename_(filename),
+    min_len_(min_len),
+    max_words_(max_words)
+{
+}
+
+std::set<AnagramBuilder::Words> AnagramBuilder::getAnagrams()
+{
+    auto file_words = readWordsFromFile();
+    auto all_words_data = mapWords(file_words);
+    auto results = anagrams(all_words_data);
+    return results;
+}
+
+AnagramBuilder::Words AnagramBuilder::readWordsFromFile()
 {
     Words words;
     std::ifstream file;
-    file.open(filename);
+    file.open(filename_);
     std::string word;
     while (file >> word)
     {
-        if (word.length() >= min_len)
+        if (word.length() >= min_len_)
         {
             words.push_back(word);
         }
@@ -23,7 +44,7 @@ Words ReadWordsFromFile(const std::string& filename, size_t min_len)
     return words;
 }
 
-WordDataSet MapWords(const Words& words)
+AnagramBuilder::WordDataSet AnagramBuilder::mapWords(const Words& words)
 {
     WordDataSet word_data_set;
     for (auto word: words)
@@ -37,13 +58,13 @@ WordDataSet MapWords(const Words& words)
 }
 
 // Splits dictionary to smaller parts that can be assigned to separate threads
-static void SplitWork(std::vector<WordDataSet>& dict_splits,
-               const WordDataSet& dictionary)
+static void splitWork(std::vector<AnagramBuilder::WordDataSet>& dict_splits,
+               const AnagramBuilder::WordDataSet& dictionary)
 {
     size_t i = 0;
     for (; i < MAX_NUM_THREADS; i++)
     {
-        dict_splits.push_back(WordDataSet());
+        dict_splits.push_back(AnagramBuilder::WordDataSet());
     }
     i = 0;
     for (const auto& word: dictionary)
@@ -54,19 +75,17 @@ static void SplitWork(std::vector<WordDataSet>& dict_splits,
 }
 
 
-static void ThreadWorker(BuilderInstance& ctx)
+static void threadWorker(BuilderInstance& ctx)
 {
     ctx.generateAnagrams();
 }
 
 // Main interface function. Divides the computation to several threads
 // and collects results from them.
-std::set<Words> Anagrams(const std::string& target,
-                         WordDataSet& dictionary,
-                         size_t max_words)
+std::set<AnagramBuilder::Words> AnagramBuilder::anagrams(WordDataSet& dictionary)
 {
     std::set<Words> results;
-    if (max_words < 1)
+    if (max_words_ < 1)
     {
         // Return empty results
         return results;
@@ -80,7 +99,7 @@ std::set<Words> Anagrams(const std::string& target,
     std::vector<WordDataSet> dict_splits;
     // Each thread has its own set of results
     std::vector<std::set<Words>> thread_results(MAX_NUM_THREADS);
-    SplitWork(dict_splits, dictionary);
+    splitWork(dict_splits, dictionary);
 
     std::mutex results_guard;
 
@@ -91,10 +110,10 @@ std::set<Words> Anagrams(const std::string& target,
         auto ctx = BuilderInstance(
             dict_splits.at(thread_num),
             dictionary,
-            target,
+            target_,
             thread_results.at(thread_num),
             results_guard,
-            max_words
+            max_words_
         );
 
         thread_contexes.push_back(ctx);
@@ -105,7 +124,7 @@ std::set<Words> Anagrams(const std::string& target,
     {
         worker_threads.at(thread_num) = std::make_unique<std::thread>(
             std::thread(
-                ThreadWorker,
+                threadWorker,
                 std::ref(thread_contexes.at(thread_num))));
     }
 

@@ -1,10 +1,11 @@
+#include "anagram.h"
 #include "builderinstance.h"
 #include <algorithm>
 
 void BuilderInstance::generateAnagrams()
 {
-    Candidate stem;
-    WordData target_data;
+    AnagramBuilder::Candidate stem;
+    AnagramBuilder::WordData target_data;
     target_data.first = target_;
     target_data.second = CharMap(target_);
     // This logic is almost identical to BuildAnagrams but on the
@@ -20,9 +21,9 @@ void BuilderInstance::generateAnagrams()
 }
 
 void BuilderInstance::tryAddNewWord(
-    const WordData& new_word,
-    const WordData& target_data,
-    Candidate& stem,
+    const AnagramBuilder::WordData& new_word,
+    const AnagramBuilder::WordData& target_data,
+    AnagramBuilder::Candidate& stem,
     size_t cur_len)
 {
     // Add new words recursively
@@ -49,8 +50,8 @@ void BuilderInstance::tryAddNewWord(
 // recursion terminates if stem matches the target exactly or there are
 // too many words in the stem.
 void BuilderInstance::buildMoreAnagramsRecursively(
-    const WordData& target,
-    Candidate stem,
+    const AnagramBuilder::WordData& target,
+    AnagramBuilder::Candidate stem,
     size_t length)
 {
     if (stem.second == target.second)
