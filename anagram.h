@@ -49,12 +49,12 @@ void BuildAnagrams(const WordData& target,
                    const WordDataSet& dictonary,
                    Candidate stem,
                    std::set<Words>& results,
-                   unsigned int length,
-                   unsigned int max_words,
+                   size_t length,
+                   size_t max_words,
                    std::mutex& results_guard);
 
 // Populates words from words.txt
-Words ReadWordsFromFile(const std::string& filename, unsigned int min_len);
+Words ReadWordsFromFile(const std::string& filename, size_t min_len);
 
 // Populates character map for a set of words
 WordDataSet MapWords(const Words& words);
@@ -64,6 +64,6 @@ WordDataSet MapWords(const Words& words);
 // Will return anagrams containing up to max_words number of words.
 std::set<Words> Anagrams(const std::string& target,
                          WordDataSet& dictionary,
-                         unsigned int max_words);
+                         size_t max_words);
 
 #endif

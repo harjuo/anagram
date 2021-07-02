@@ -14,8 +14,8 @@ int main(int argc, char** argv)
     std::string target = argv[1];
     // The minimum word length depends on the target word
     auto min_word_len = target.length()/MIN_WORD_LEN_LIMITER;
-    auto words = ReadWordsFromFile("words.txt", min_word_len);
-    auto all_words_data = MapWords(words);
+    auto file_words = ReadWordsFromFile("words.txt", min_word_len);
+    auto all_words_data = MapWords(file_words);
 
     auto results = Anagrams(argv[1], all_words_data, MAX_WORD_COUNT);
     for (const auto& words: results)

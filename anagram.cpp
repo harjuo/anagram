@@ -2,6 +2,9 @@
 #include <fstream>
 #include <algorithm>
 #include <thread>
+#include <memory>
+
+typedef std::vector<std::unique_ptr<std::thread>> thread_vector;
 
 CharMap::CharMap() : container()
 {
@@ -56,7 +59,7 @@ bool CharMap::operator<(const CharMap& other) const
     return this->container < other.container;
 }
 
-Words ReadWordsFromFile(const std::string& filename, unsigned int min_len)
+Words ReadWordsFromFile(const std::string& filename, size_t min_len)
 {
     Words words;
     std::ifstream file;
@@ -91,8 +94,8 @@ struct ThreadContext
     const WordDataSet& dictionary;
     const std::string& target;
     std::set<Words>& results;
-    unsigned int max_words;
     std::mutex& results_guard;
+    size_t max_words;
 };
 
 // Encapsulates a thread and results of its computation
@@ -103,10 +106,10 @@ struct ThreadContainer
 };
 
 // Splits dictionary to smaller parts that can be assigned to separate threads
-void SplitWork(std::vector<WordDataSet>& dict_splits,
+static void SplitWork(std::vector<WordDataSet>& dict_splits,
                const WordDataSet& dictionary)
 {
-    int i = 0;
+    size_t i = 0;
     for (; i < MAX_NUM_THREADS; i++)
     {
         dict_splits.push_back(WordDataSet());
@@ -119,13 +122,13 @@ void SplitWork(std::vector<WordDataSet>& dict_splits,
     }
 }
 
-void TryAddNewWord(const WordData& new_word,
+static void TryAddNewWord(const WordData& new_word,
                    const WordData& target_data,
                    const WordDataSet& dictionary,
                    Candidate& stem,
                    std::set<Words>& results,
-                   unsigned int cur_len,
-                   unsigned int max_words,
+                   size_t cur_len,
+                   size_t max_words,
                    std::mutex& results_guard)
 {
     // Add new words recursively
@@ -151,7 +154,7 @@ void TryAddNewWord(const WordData& new_word,
     }
 }
 
-void ThreadWorker(ThreadContext& ctx)
+static void ThreadWorker(ThreadContext& ctx)
 {
     Candidate stem;
     WordData target_data;
@@ -178,7 +181,7 @@ void ThreadWorker(ThreadContext& ctx)
 // and collects results from them.
 std::set<Words> Anagrams(const std::string& target,
                          WordDataSet& dictionary,
-                         unsigned int max_words)
+                         size_t max_words)
 {
     std::set<Words> results;
     if (max_words < 1)
@@ -188,7 +191,7 @@ std::set<Words> Anagrams(const std::string& target,
     }
 
     // Split the work to MAX_NUM_THREADS
-    std::vector<std::thread*> worker_threads(MAX_NUM_THREADS);
+    thread_vector worker_threads(MAX_NUM_THREADS);
     // Each thread has its own context
     std::vector<ThreadContext> thread_contexes;
     // Each thread has a split of dictionary to go through
@@ -200,39 +203,39 @@ std::set<Words> Anagrams(const std::string& target,
     std::mutex results_guard;
 
     // Create contexes for threads
-    for (int thread_num = 0; thread_num < MAX_NUM_THREADS; thread_num++)
+    for (size_t thread_num = 0; thread_num < MAX_NUM_THREADS; thread_num++)
     {
         ThreadContext ctx = {
             .dict_split = dict_splits.at(thread_num),
             .dictionary = dictionary,
             .target = target,
             .results = thread_results.at(thread_num),
-            .max_words = max_words,
-            .results_guard = results_guard
+            .results_guard = results_guard,
+            .max_words = max_words
         };
         thread_contexes.push_back(ctx);
     }
 
     // Start all the threads
-    for (int thread_num = 0; thread_num < MAX_NUM_THREADS; thread_num++)
+    for (size_t thread_num = 0; thread_num < MAX_NUM_THREADS; thread_num++)
     {
-        worker_threads.at(thread_num) = new std::thread(
-            ThreadWorker,
-            std::ref(thread_contexes.at(thread_num)));
+        worker_threads.at(thread_num) = std::make_unique<std::thread>(
+            std::thread(
+                ThreadWorker,
+                std::ref(thread_contexes.at(thread_num))));
     }
 
     // Join the threads
-    for(int i = 0; i < MAX_NUM_THREADS; i++)
+    for(size_t i = 0; i < MAX_NUM_THREADS; i++)
     {
         worker_threads.at(i)->join();
     }
 
     // Collect results from threads
-    for(int i = 0; i < MAX_NUM_THREADS; i++)
+    for(size_t i = 0; i < MAX_NUM_THREADS; i++)
     {
         results.insert(thread_results.at(i).begin(),
                        thread_results.at(i).end());
-        delete worker_threads.at(i);
     }
 
     return results;
@@ -249,8 +252,8 @@ void BuildAnagrams(const WordData& target,
                    const WordDataSet& dictionary,
                    Candidate stem,
                    std::set<Words>& results,
-                   unsigned int length,
-                   unsigned int max_words,
+                   size_t length,
+                   size_t max_words,
                    std::mutex& results_guard)
 {
     if (stem.second == target.second)
