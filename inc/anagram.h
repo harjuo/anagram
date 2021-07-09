@@ -48,6 +48,10 @@ private:
     // Will return anagrams containing up to max_words number of words.
     std::set<Words> anagrams(WordDataSet& dictionary);
 
+    void splitWork(
+        std::vector<AnagramBuilder::WordDataSet>& dict_splits,
+        const AnagramBuilder::WordDataSet& dictionary);
+
     const std::string& target_;
     const std::string& filename_;
     size_t min_len_;

@@ -58,8 +58,8 @@ AnagramBuilder::WordDataSet AnagramBuilder::mapWords(const Words& words)
 }
 
 // Splits dictionary to smaller parts that can be assigned to separate threads
-static void splitWork(std::vector<AnagramBuilder::WordDataSet>& dict_splits,
-               const AnagramBuilder::WordDataSet& dictionary)
+void AnagramBuilder::splitWork(std::vector<AnagramBuilder::WordDataSet>& dict_splits,
+    const AnagramBuilder::WordDataSet& dictionary)
 {
     size_t i = 0;
     for (; i < MAX_NUM_THREADS; i++)
@@ -73,7 +73,6 @@ static void splitWork(std::vector<AnagramBuilder::WordDataSet>& dict_splits,
         i++;
     }
 }
-
 
 static void threadWorker(BuilderInstance& ctx)
 {
